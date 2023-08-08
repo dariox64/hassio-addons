@@ -8,9 +8,9 @@ arch:
   - aarch64
   - amd64
   - i386
-image: "dariox64/paradox-ip150-{arch}"
+image: "maisken/paradox-ip150-{arch}"
 init: false
-url: "https://github.com/dariox64/Paradox_IP150"
+url: "https://github.com/maisken/Paradox_IP150"
 startup: "services"
 boot: "auto"
 panel_icon: "mdi:shield-home"
