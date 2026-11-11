@@ -1,3 +1,8 @@
+# 1.5 - 2026-11-11
+- Retry adapter startup in-process with growing backoff instead of letting
+  a failed login/connection crash the container (which caused the
+  Supervisor to restart it in a tight loop, hammering the IP150)
+
 # 1.4 - 2026-11-11
 - Build locally from source instead of pulling the upstream prebuilt image
 - Decouple HTTP request timeout from the polling interval (fixes spurious

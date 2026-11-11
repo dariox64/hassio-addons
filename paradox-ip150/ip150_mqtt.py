@@ -1,11 +1,19 @@
 import argparse
 import json
 import logging
+import time
 import urllib.parse
 
 import paho.mqtt.client as mqtt
 
 import ip150
+
+# Backoff schedule (seconds) used when the whole adapter fails to start up
+# (e.g. the IP150 is briefly unreachable, or rejects the login). Restarting
+# the whole container via the Supervisor for this is slow and, worse, was
+# observed to hammer the IP150 with near-instant retries; retrying here
+# with a growing delay is both faster to recover and gentler on the panel.
+_STARTUP_RETRY_DELAYS = [5, 10, 20, 40, 60, 120, 300]
 
 
 class IP150_MQTT_Error(Exception):
@@ -128,7 +136,7 @@ class IP150_MQTT():
 				raise IP150_MQTT_Error('No port defined, nor "mqtt" nor "mqtts" scheme.')
 		return (parsed.hostname, port)
 
-	def loop_forever(self):
+	def _run_once(self):
 		mqtt_hostname, mqtt_port = self.parse_mqtt_url()
 
 		self.ip = ip150.Paradox_IP150(self._cfg['IP150_ADDRESS'])
@@ -144,6 +152,23 @@ class IP150_MQTT():
 		mqc.connect(mqtt_hostname, mqtt_port)
 
 		mqc.loop_forever()
+
+	def loop_forever(self):
+		# A failure here (IP150 briefly unreachable, rejected login, broker
+		# down at startup, ...) is retried in-process with backoff instead
+		# of letting the exception kill the whole container.
+		attempt = 0
+		while True:
+			try:
+				self._run_once()
+				return  # a clean, requested shutdown (mqtt_ctrl_disconnect)
+			except Exception as e:
+				delay = _STARTUP_RETRY_DELAYS[min(attempt, len(_STARTUP_RETRY_DELAYS) - 1)]
+				attempt += 1
+				logging.error(
+					'Adapter failed to start/run (attempt {}): {}. Retrying in {}s.'.format(
+						attempt, e, delay))
+				time.sleep(delay)
 
 if __name__ == '__main__':
 	argp = argparse.ArgumentParser(description='MQTT adapter for IP150 Alarms')
