@@ -1,3 +1,12 @@
+# 1.4 - 2026-11-11
+- Build locally from source instead of pulling the upstream prebuilt image
+- Decouple HTTP request timeout from the polling interval (fixes spurious
+  "Read timed out" errors when REFRESH_RATE is set low)
+- Reuse a single requests.Session instead of opening a new connection per request
+- Tolerate a few consecutive failed polls before tearing down the MQTT bridge
+- Broaden retry handling to all request exceptions, with backoff
+- Add timeouts to login()/logout(), silence urllib3 SSL warnings
+
 # 1.3 - 2022-11-13
 - Update dependencies and add-on metadata
 - Handle connection timeouts to Paradox web interface

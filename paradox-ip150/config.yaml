@@ -1,5 +1,5 @@
 name: "Paradox IP150 MQTT Adapter"
-version: "1.3"
+version: "1.4"
 slug: "paradox_ip150_mqtt"
 description: "Expose an MQTT interface for the Paradox IP150 web interface"
 arch:
@@ -8,7 +8,6 @@ arch:
   - aarch64
   - amd64
   - i386
-image: "maisken/paradox-ip150-{arch}"
 init: false
 url: "https://github.com/dariox64/Paradox_IP150"
 startup: "services"
